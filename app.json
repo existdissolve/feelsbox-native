@@ -1,0 +1,12 @@
+{
+  "name": "feelsbox-native",
+  "displayName": "feelsbox-native",
+  "expo": {
+    "name": "feelsbox-native",
+    "slug": "feelsbox-native",
+    "version": "1.0.0",
+    "assetBundlePatterns": [
+      "**/*"
+    ]
+  }
+}
