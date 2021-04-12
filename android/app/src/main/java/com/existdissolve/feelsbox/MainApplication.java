@@ -1,17 +1,20 @@
-package com.feelsboxnative;
+package com.existdissolve.feelsbox;
 
 import android.app.Application;
 import android.content.Context;
 import android.net.Uri;
 
+import co.apptailor.googlesignin.RNGoogleSigninPackage;
 import com.facebook.react.PackageList;
 import com.facebook.react.ReactApplication;
+import it.innove.BleManagerPackage;
+import com.polidea.reactnativeble.BlePackage;
 import com.facebook.react.ReactInstanceManager;
 import com.facebook.react.ReactNativeHost;
 import com.facebook.react.ReactPackage;
 import com.facebook.react.shell.MainReactPackage;
 import com.facebook.soloader.SoLoader;
-import com.feelsboxnative.generated.BasePackageList;
+import com.existdissolve.feelsbox.generated.BasePackageList;
 
 import org.unimodules.adapters.react.ReactAdapterPackage;
 import org.unimodules.adapters.react.ModuleRegistryAdapter;
@@ -42,6 +45,7 @@ public class MainApplication extends Application implements ReactApplication {
     @Override
     protected List<ReactPackage> getPackages() {
       List<ReactPackage> packages = new PackageList(this).getPackages();
+      packages.add(new RNGoogleSigninPackage());
       packages.add(new ModuleRegistryAdapter(mModuleRegistryProvider));
       return packages;
     }
@@ -102,7 +106,7 @@ public class MainApplication extends Application implements ReactApplication {
          We use reflection here to pick up the class that initializes Flipper,
         since Flipper library is not available in release mode
         */
-        Class<?> aClass = Class.forName("com.feelsboxnative.ReactNativeFlipper");
+        Class<?> aClass = Class.forName("com.existdissolve.feelsbox.ReactNativeFlipper");
         aClass
             .getMethod("initializeFlipper", Context.class, ReactInstanceManager.class)
             .invoke(null, context, reactInstanceManager);

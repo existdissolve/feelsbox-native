@@ -1,4 +1,4 @@
-package com.feelsboxnative;
+package com.existdissolve.feelsbox;
 
 import android.os.Bundle;
 

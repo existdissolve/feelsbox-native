@@ -5,30 +5,52 @@
     "ios": "react-native run-ios",
     "web": "expo start --web",
     "start": "react-native start",
+    "log": "react-native log-android",
     "test": "jest"
   },
   "dependencies": {
+    "@apollo/client": "^3.3.14",
+    "@expo/vector-icons": "^12.0.4",
+    "@react-native-community/masked-view": "^0.1.10",
+    "@react-navigation/drawer": "^5.12.5",
+    "@react-navigation/native": "^5.9.4",
+    "@react-navigation/stack": "^5.14.4",
+    "apollo-link-http": "^1.5.17",
+    "base-64": "^1.0.0",
     "expo": "~40.0.0",
     "expo-splash-screen": "~0.8.0",
     "expo-status-bar": "~1.0.3",
     "expo-updates": "~0.4.0",
+    "graphql": "^15.5.0",
     "react": "16.13.1",
     "react-dom": "16.13.1",
     "react-native": "~0.63.4",
-    "react-native-gesture-handler": "~1.8.0",
-    "react-native-reanimated": "~1.13.0",
-    "react-native-screens": "~2.15.0",
+    "react-native-ble-manager": "^7.4.1",
+    "react-native-ble-plx": "^2.0.2",
+    "react-native-gesture-handler": "^1.8.0",
+    "react-native-google-signin": "^2.1.1",
+    "react-native-paper": "^4.7.2",
+    "react-native-reanimated": "^1.13.3",
+    "react-native-safe-area-context": "^3.2.0",
+    "react-native-screens": "^2.15.2",
     "react-native-unimodules": "~0.12.0",
+    "react-native-vector-icons": "^7.1.0",
     "react-native-web": "~0.13.12"
   },
   "devDependencies": {
     "@babel/core": "~7.9.0",
     "babel-jest": "~25.2.6",
+    "babel-plugin-module-resolver": "^4.1.0",
+    "eslint": "^7.24.0",
+    "eslint-plugin-react": "^7.23.2",
+    "eslint-plugin-react-native": "^3.10.0",
     "jest": "~25.2.6",
     "react-test-renderer": "~16.13.1"
   },
   "jest": {
     "preset": "react-native"
   },
-  "private": true
+  "private": true,
+  "name": "feelsbox-native",
+  "version": "1.0.0"
 }
