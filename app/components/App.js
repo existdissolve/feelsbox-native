@@ -1,4 +1,5 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
+import {useMutation, useQuery} from '@apollo/client';
 import 'react-native-gesture-handler';
 import {StatusBar} from 'expo-status-bar';
 import {PermissionsAndroid, StyleSheet, Text, View} from 'react-native';
@@ -6,15 +7,15 @@ import {Provider as PaperProvider, Appbar, Drawer} from 'react-native-paper';
 import {NavigationContainer} from '@react-navigation/native';
 import {createStackNavigator} from '@react-navigation/stack';
 import {createDrawerNavigator, DrawerContentScrollView} from '@react-navigation/drawer';
-import {ApolloProvider} from '@apollo/client';
 import {Button} from 'react-native-paper';
 import {BleManager} from 'react-native-ble-plx';
 import base64 from 'base-64';
 import {get} from 'lodash';
 import {MaterialCommunityIcons} from '@expo/vector-icons';
 
+import Authentication from '-/components/Authentication';
+import SnackbarProvider from '-/components/shared/Snackbar';
 import Categories from '-/components/category';
-import client from '-/graphql/client';
 /*
 let ble;
 
@@ -164,25 +165,18 @@ const StackNavigator = () => {
     );
 };
 
-export default function App() {
+export default props => {
     return (
-        <ApolloProvider client={client}>
+        <Authentication>
             <PaperProvider>
-                <NavigationContainer>
-                    <DrawerNav.Navigator drawerContent={props => <DrawerMenu {...props} />}>
-                        <DrawerNav.Screen name="Home" component={StackNavigator} />
-                    </DrawerNav.Navigator>
-                </NavigationContainer>
+                <SnackbarProvider>
+                    <NavigationContainer>
+                        <DrawerNav.Navigator drawerContent={props => <DrawerMenu {...props} />}>
+                            <DrawerNav.Screen name="Home" component={StackNavigator} />
+                        </DrawerNav.Navigator>
+                    </NavigationContainer>
+                </SnackbarProvider>
             </PaperProvider>
-        </ApolloProvider>
+        </Authentication>
     );
-}
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#fff',
-        alignItems: 'center',
-        justifyContent: 'center'
-    }
-});
+};
