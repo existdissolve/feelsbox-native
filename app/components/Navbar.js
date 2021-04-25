@@ -1,0 +1,25 @@
+import React from 'react';
+import {get} from 'lodash';
+import {Appbar, useTheme} from 'react-native-paper';
+
+export default props => {
+    const theme = useTheme();
+    const style = {
+        backgroundColor: get(theme, 'colors.primary')
+    };
+    const {navigation, previous} = props;
+    const previousRoute = get(previous, 'route.name');
+    const rootRoutes = ['feels', 'feelsgroups', 'findfeels', 'categories', 'devices', 'devicegroups', 'account'];
+    const isRootRoute = rootRoutes.includes(previousRoute);
+    const title = get(props, 'scene.descriptor.options.title');
+    const backBtn = <Appbar.BackAction onPress={navigation.goBack} />;
+    const drawerBtn = <Appbar.Action icon="menu" onPress={() => navigation.openDrawer()} />;
+
+    return (
+        <Appbar.Header style={style}>
+            {previous && !isRootRoute && backBtn}
+            {(!previous || isRootRoute) && drawerBtn}
+            <Appbar.Content title={title} />
+        </Appbar.Header>
+    );
+};

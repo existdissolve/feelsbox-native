@@ -1,7 +1,7 @@
-import React, {Fragment, useContext, useState} from 'react';
+import React, {useContext, useState} from 'react';
 import {useMutation, useQuery} from '@apollo/client';
-import {ScrollView, StyleSheet} from 'react-native';
-import {FAB, IconButton, List, TextInput} from 'react-native-paper';
+import {ScrollView} from 'react-native';
+import {IconButton, List, TextInput} from 'react-native-paper';
 import {get} from 'lodash';
 
 import {
@@ -9,10 +9,9 @@ import {
     editCategory as editCategoryMutation,
     getMyCategories
 } from '-/graphql/category';
-import Dialog from '-/components/shared/Dialog';
-import {SnackbarContext} from '-/components/shared/Snackbar';
+import {Container, Dialog, Fab, Loading, SnackbarContext, Section, Subheader} from '-/components/shared';
 
-export default props => {
+export default () => {
     const [currentItem, setCurrentItem] = useState(null);
     const [isOpen, setIsOpen] = useState(false);
     const [category, setCategory] = useState('');
@@ -21,9 +20,10 @@ export default props => {
     const results = useQuery(getMyCategories, {
         options: {notifyOnNetworkStatusChange: true}
     });
+    const loading = get(results, 'loading');
     const categories = get(results, 'data.myCategories', []);
     const action = currentItem ? 'Edit' : 'Add';
-    const {hide, show} = useContext(SnackbarContext);
+    const {show} = useContext(SnackbarContext);
 
     const onEditPress = _id => {
         const category = categories.find(category => category._id === _id);
@@ -78,21 +78,24 @@ export default props => {
     };
 
     return (
-        <Fragment>
-            <ScrollView>
-                <List.Section style={styles.section}>
-                    <List.Subheader style={styles.subheader}>My Categories</List.Subheader>
-                    {categories.length > 0 && categories.map((category, idx) => {
-                        const {_id, name} = category;
-                        const Icon = () => <IconButton icon="pencil" onPress={onEditPress.bind(null, _id)} />;
+        <Container>
+            {!loading &&
+                <ScrollView>
+                    <Section>
+                        <Subheader label="My Categories" />
+                        {categories.length > 0 && categories.map((category, idx) => {
+                            const {_id, name} = category;
+                            const Icon = () => <IconButton icon="pencil" onPress={onEditPress.bind(null, _id)} />;
 
-                        return (
-                            <List.Item key={idx} title={name} right={Icon} />
-                        );
-                    })}
-                </List.Section>
-            </ScrollView>
-            <FAB style={styles.fab} icon="plus" onPress={onAddPress} />
+                            return (
+                                <List.Item key={idx} title={name} right={Icon} />
+                            );
+                        })}
+                    </Section>
+                </ScrollView>
+            }
+            <Loading loading={loading} text="Loading Categories..." />
+            <Fab pressHandler={onAddPress} />
             <Dialog
                 isOpen={isOpen}
                 title={`${action} Category`}
@@ -101,23 +104,6 @@ export default props => {
                 onSavePress={onSavePress}>
                 <TextInput label="Email" value={category} onChangeText={value => setCategory(value)} />
             </Dialog>
-        </Fragment>
+        </Container>
     );
 };
-
-const styles = StyleSheet.create({
-    fab: {
-        position: 'absolute',
-        right: 0,
-        bottom: 0,
-        margin: 16
-    },
-    section: {
-        marginVertical: 0
-    },
-    subheader: {
-        backgroundColor: '#333',
-        color: '#fafafa',
-        paddingVertical: 8
-    }
-});

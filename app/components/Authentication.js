@@ -61,8 +61,12 @@ export default props => {
         setUser(null);
     };
 
-    const onAuthStateChanged = user => {
+    const onAuthStateChanged = async user => {
         if (user) {
+            const {email} = user;
+            // send to server to establish session
+            await loginUser({variables: {email}});
+
             setUser(user);
             setIsLoggedIn(true);
         }

@@ -1,21 +1,15 @@
-import React, {useEffect, useState} from 'react';
-import {useMutation, useQuery} from '@apollo/client';
+import React from 'react';
 import 'react-native-gesture-handler';
-import {StatusBar} from 'expo-status-bar';
-import {PermissionsAndroid, StyleSheet, Text, View} from 'react-native';
-import {Provider as PaperProvider, Appbar, Drawer} from 'react-native-paper';
+import {Colors, DarkTheme, Provider as PaperProvider} from 'react-native-paper';
 import {NavigationContainer} from '@react-navigation/native';
-import {createStackNavigator} from '@react-navigation/stack';
-import {createDrawerNavigator, DrawerContentScrollView} from '@react-navigation/drawer';
-import {Button} from 'react-native-paper';
+import {createDrawerNavigator} from '@react-navigation/drawer';
 import {BleManager} from 'react-native-ble-plx';
 import base64 from 'base-64';
-import {get} from 'lodash';
-import {MaterialCommunityIcons} from '@expo/vector-icons';
 
 import Authentication from '-/components/Authentication';
 import SnackbarProvider from '-/components/shared/Snackbar';
-import Categories from '-/components/category';
+import DrawerMenu from '-/components/Drawer';
+import Stack from '-/components/Stack';
 /*
 let ble;
 
@@ -99,80 +93,57 @@ const getPermission = async() => {
 }
 */
 
-const HomeScreen = props => {
-    const {navigation} = props;
-
-    return (
-        <View style={{flex: 1}}>
-            <Text>Home Hello</Text>
-            <Button title="Go to Next" onPress={() => navigation.navigate('next')} />
-        </View>
-    );
-};
-
-const NextScreen = () => {
-    return (
-        <View>
-            <Text>Next Screen</Text>
-        </View>
-    );
-};
-
-const NavBar = props => {
-    const {navigation, previous} = props;
-    const title = get(props, 'scene.descriptor.options.title');
-    const backBtn = <Appbar.BackAction onPress={navigation.goBack} />;
-    const drawerBtn = <Appbar.Action icon="menu" onPress={() => navigation.openDrawer()} />;
-
-    return (
-        <Appbar.Header>
-            {previous && backBtn}
-            {!previous && drawerBtn}
-            <Appbar.Content title={title} />
-        </Appbar.Header>
-    );
-};
-
-const DrawerMenu = props => {
-    return (
-        <DrawerContentScrollView {...props}>
-            <View>
-                <Drawer.Section>
-                    <Drawer.Item label="My Feels" onPress={() => {}} icon="emoticon-outline" />
-                    <Drawer.Item label="Feels Groups" onPress={() => {}} icon="folder-multiple-image" />
-                    <Drawer.Item label="Find Feels" onPress={() => {}} icon="magnify" />
-                    <Drawer.Item label="Categories" onPress={() => {}} icon="view-list-outline" />
-                    <Drawer.Item label="Devices" onPress={() => {}} icon="tablet" />
-                    <Drawer.Item label="Device Groups" onPress={() => {}} icon="tablet-cellphone" />
-                    <Drawer.Item label="My Account" onPress={() => {}} icon="account-box" />
-                    <Drawer.Item label="Reload" onPress={() => {}} icon="reload" />
-                    <Drawer.Item label="Logout" onPress={() => {}} icon="logout-variant" />
-                </Drawer.Section>
-            </View>
-        </DrawerContentScrollView>
-    );
-};
-
 const DrawerNav = createDrawerNavigator();
-const Stack = createStackNavigator();
-const StackNavigator = () => {
-    return (
-        <Stack.Navigator initialRouteName="categories" screenOptions={{header: NavBar}}>
-            <Stack.Screen name="home" component={HomeScreen} options={{title: 'Home'}} />
-            <Stack.Screen name="categories" component={Categories} options={{title: 'Categories'}} />
-            <Stack.Screen name="next" component={NextScreen} options={{title: 'Next Thing'}} />
-        </Stack.Navigator>
-    );
+const themes = {
+    blue: {
+        colors: {
+            accent: '#f50057',
+            primary: '#3f51b5'
+        }
+    },
+    sorbet: {
+        colors: {
+            accent: '#d500f9',
+            primary: '#e91e63'
+        }
+    },
+    grassy: {
+        colors: {
+            accent: '#c6ff00',
+            primary: '#4caf50'
+        }
+    },
+    ocean: {
+        colors: {
+            accent: '#00e5ff',
+            primary: '#009688'
+        }
+    },
+    sunrise: {
+        colors: {
+            accent: '#ffea00',
+            primary: '#ff9800'
+        }
+    }
+};
+const theme = {
+    ...DarkTheme,
+    colors: {
+        ...DarkTheme.colors,
+        ...themes.sorbet.colors,
+        background: Colors.grey800
+    },
+    roundness: 2
 };
 
-export default props => {
+export default () => {
     return (
         <Authentication>
-            <PaperProvider>
+            <PaperProvider theme={theme}>
                 <SnackbarProvider>
                     <NavigationContainer>
                         <DrawerNav.Navigator drawerContent={props => <DrawerMenu {...props} />}>
-                            <DrawerNav.Screen name="Home" component={StackNavigator} />
+                            <DrawerNav.Screen name="Home" component={Stack} />
                         </DrawerNav.Navigator>
                     </NavigationContainer>
                 </SnackbarProvider>
