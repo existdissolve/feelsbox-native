@@ -6,6 +6,7 @@ import {Text, View} from 'react-native';
 import Navbar from '-/components/Navbar';
 import Categories from '-/components/category';
 import Devices from '-/components/device';
+import History from '-/components/device/History';
 
 const HomeScreen = props => {
     const {navigation} = props;
@@ -34,6 +35,7 @@ export default () => {
             <Stack.Screen name="home" component={HomeScreen} options={{title: 'Home'}} />
             <Stack.Screen name="categories" component={Categories} options={{title: 'Categories', animationEnabled: false}} />
             <Stack.Screen name="devices" component={Devices} options={{title: 'Devices', animationEnabled: false}} />
+            <Stack.Screen name="devicehistory" component={History} options={{title: 'Devices', animationEnabled: false}} />
             <Stack.Screen name="next" component={NextScreen} options={{title: 'Next Thing'}} />
         </Stack.Navigator>
     );

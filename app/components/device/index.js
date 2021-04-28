@@ -12,19 +12,22 @@ import {
     turnOff as turnOffMutation,
     updateDevice as updateDeviceMutation
 } from '-/graphql/device';
+import {setDefaultDevice as setDefaultDeviceMutation} from '-/graphql/user';
 import {Container, Dialog, Loading, SnackbarContext, Section, Subheader} from '-/components/shared';
 
 export default props => {
+    const {navigation} = props;
     const [currentItem, setCurrentItem] = useState(null);
     const [isMenuVisible, setIsMenuVisible] = useState(false);
     const [menuAnchor, setMenuAnchor] = useState(null);
     const [restart] = useMutation(restartMutation);
     const [setBrightness] = useMutation(setBrightnessMutation);
     const [submitAccessCode] = useMutation(submitAccessCodeMutation);
+    const [setDefaultDevice] = useMutation(setDefaultDeviceMutation);
     const [turnOff] = useMutation(turnOffMutation);
     const [updateDevice] = useMutation(updateDeviceMutation);
     const theme = useTheme();
-    const primaryColor = get(theme, 'colors.accent');
+    const color = get(theme, 'colors.accent');
     const results = useQuery(getDevices, {
         options: {notifyOnNetworkStatusChange: true}
     });
@@ -49,32 +52,54 @@ export default props => {
         }
     });
 
-    const onTurnOffClick = _id => {
+    const onTurnOffClick = async _id => {
+        await turnOff({
+            variables: {_id}
+        });
+
+        show('Device was turned off successfully!');
+    };
+
+    const onSetBrightnessClick = async _id => {
 
     };
 
-    const onSetBrightnessClick = _id => {
+    const onDefaultClick = async _id => {
+        await setDefaultDevice({
+            awaitRefetchQueries: true,
+            refetchQueries: [{
+                query: getDevices
+            }],
+            variables: {_id}
+        });
 
+        show('Default device was changed successfully!');
     };
 
-    const onDefaultClick = _id => {
+    const onRestartPress = async() => {
+        await restart({
+            variables: {_id: currentItem}
+        });
 
-    };
-
-    const onRestartPress = () => {
-        console.log(currentItem)
+        show('Device will restart shortly!');
 
         onCloseMenu();
     };
 
-    const onUpdatePress = () => {
+    const onUpdatePress = async() => {
+        await updateDevice({
+            variables: {_id: currentItem}
+        });
+
+        show('Device will update and restart shortly!');
 
         onCloseMenu();
     };
 
-    const onHistoryPress = () => {
-
+    const onHistoryPress = async() => {
         onCloseMenu();
+
+        navigation.navigate('devicehistory', {_id: currentItem});
     };
 
     const onOpenMenu = (_id, e) => {
@@ -89,6 +114,10 @@ export default props => {
         setMenuAnchor(null);
         setIsMenuVisible(false);
         setCurrentItem(null);
+    };
+
+    const onEditPress = _id => {
+
     };
 
     return (
@@ -109,15 +138,14 @@ export default props => {
                                 {devices.map((device, deviceIdx) => {
                                     const {_id, isDefault, isOwner, name} = device;
                                     const accountIcon = isOwner ? 'account-circle' : 'account-supervisor-circle';
-                                    let accountAction;
-                                    //const accountAction = isOwner ? onEditPress.bind(null, _id) : undefined;
+                                    const accountAction = isOwner ? onEditPress.bind(null, _id) : undefined;
                                     const AccountIcon = () => <IconButton icon={accountIcon} onPress={accountAction} style={styles.listicon} />;
                                     const ActionIcons = () => (
                                         <View style={{flexDirection: 'row'}}>
                                             {isOwner && <IconButton icon="flash-off" onPress={onTurnOffClick.bind(null, _id)} style={styles.listicon} />}
                                             {isOwner && <IconButton icon="brightness-6" onPress={onSetBrightnessClick.bind(null, _id)} style={styles.listicon} />}
                                             {isOwner && <IconButton icon="dots-vertical" onPress={onOpenMenu.bind(null, _id)} style={styles.listicon} />}
-                                            <IconButton icon="remote" color={isDefault ? primaryColor : undefined} onPress={onDefaultClick.bind(null, _id)} style={styles.listicon} />
+                                            <IconButton icon="remote" color={isDefault ? color : undefined} onPress={onDefaultClick.bind(null, _id)} style={styles.listicon} />
                                         </View>
                                     );
                                     return (
