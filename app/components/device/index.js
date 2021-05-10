@@ -2,13 +2,13 @@ import React, {Fragment, useContext, useState} from 'react';
 import {useMutation, useQuery} from '@apollo/client';
 import {ScrollView, StyleSheet, View} from 'react-native';
 import {Divider, IconButton, List, Menu, useTheme} from 'react-native-paper';
+import Slider from '@react-native-community/slider';
 import {get} from 'lodash';
 
 import {
     getDevices,
     restart as restartMutation,
     setBrightness as setBrightnessMutation,
-    submitAccessCode as submitAccessCodeMutation,
     turnOff as turnOffMutation,
     updateDevice as updateDeviceMutation
 } from '-/graphql/device';
@@ -18,11 +18,12 @@ import {Container, Dialog, Loading, SnackbarContext, Section, Subheader} from '-
 export default props => {
     const {navigation} = props;
     const [currentItem, setCurrentItem] = useState(null);
+    const [currentBrightness, setCurrentBrightness] = useState(100);
     const [isMenuVisible, setIsMenuVisible] = useState(false);
+    const [isSliderOpen, setIsSliderOpen] = useState(false);
     const [menuAnchor, setMenuAnchor] = useState(null);
     const [restart] = useMutation(restartMutation);
     const [setBrightness] = useMutation(setBrightnessMutation);
-    const [submitAccessCode] = useMutation(submitAccessCodeMutation);
     const [setDefaultDevice] = useMutation(setDefaultDeviceMutation);
     const [turnOff] = useMutation(turnOffMutation);
     const [updateDevice] = useMutation(updateDeviceMutation);
@@ -60,8 +61,31 @@ export default props => {
         show('Device was turned off successfully!');
     };
 
-    const onSetBrightnessClick = async _id => {
+    const onBrightnessChange = value => {
+        setCurrentBrightness(value);
+    };
 
+    const onSetBrightnessClick = async _id => {
+        setCurrentItem(_id);
+        setIsSliderOpen(true);
+    };
+
+    const onDialogClose = () => {
+        setCurrentItem(null);
+        setIsSliderOpen(false);
+    };
+
+    const onSavePress = async() => {
+        const _id = currentItem;
+        const brightness = currentBrightness;
+
+        await setBrightness({
+            variables: {_id, brightness}
+        });
+
+        show('Device brightness was set successfully!');
+
+        onDialogClose();
     };
 
     const onDefaultClick = async _id => {
@@ -117,7 +141,7 @@ export default props => {
     };
 
     const onEditPress = _id => {
-
+        navigation.navigate('editdevice', {_id});
     };
 
     return (
@@ -170,6 +194,25 @@ export default props => {
                 <Divider />
                 <Menu.Item icon="history" onPress={onHistoryPress} title="Device History" />
             </Menu>
+            <Dialog
+                isOpen={isSliderOpen}
+                title="Set Device Brightness"
+                onCancelPress={onDialogClose}
+                onDialogClose={onDialogClose}
+                onSavePress={onSavePress}
+                saveText="Save">
+                <View style={styles.sliderContainer}>
+                    <IconButton icon="brightness-1" />
+                    <Slider
+                        style={{flex: 1}}
+                        onValueChange={onBrightnessChange}
+                        step={10}
+                        minimumValue={10}
+                        maximumValue={100}
+                        value={100} />
+                    <IconButton icon="brightness-7" />
+                </View>
+            </Dialog>
         </Container>
     );
 };
@@ -178,5 +221,8 @@ const styles = StyleSheet.create({
     listicon: {
         marginLeft: 4,
         marginRight: 4
+    },
+    sliderContainer: {
+        flexDirection: 'row'
     }
 });

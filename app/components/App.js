@@ -98,30 +98,35 @@ const themes = {
     blue: {
         colors: {
             accent: '#f50057',
+            default: '#e0e0e0',
             primary: '#3f51b5'
         }
     },
     sorbet: {
         colors: {
             accent: '#d500f9',
+            default: '#e0e0e0',
             primary: '#e91e63'
         }
     },
     grassy: {
         colors: {
             accent: '#c6ff00',
+            default: '#e0e0e0',
             primary: '#4caf50'
         }
     },
     ocean: {
         colors: {
             accent: '#00e5ff',
+            default: '#e0e0e0',
             primary: '#009688'
         }
     },
     sunrise: {
         colors: {
             accent: '#ffea00',
+            default: '#e0e0e0',
             primary: '#ff9800'
         }
     }

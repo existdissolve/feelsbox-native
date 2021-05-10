@@ -1,11 +1,12 @@
 import React from 'react';
 import {StyleSheet} from 'react-native';
-import {Button, Dialog, Portal} from 'react-native-paper';
+import {Button, Dialog, Portal, useTheme} from 'react-native-paper';
+import {get} from 'lodash';
 
 export default props => {
     const {
         children,
-        closeText = 'Cancel',
+        cancelText = 'Cancel',
         isOpen,
         onCancelPress,
         onDialogClose,
@@ -15,6 +16,8 @@ export default props => {
         useCancel = true,
         useSave = true
     } = props;
+    const theme = useTheme();
+    const defaultColor = get(theme, 'colors.default');
 
     return (
         <Portal>
@@ -25,7 +28,7 @@ export default props => {
                 </Dialog.Content>
                 <Dialog.Actions>
                     {useCancel &&
-                        <Button mode="contained" onPress={onCancelPress} style={styles.cancelBtn}>{closeText}</Button>
+                        <Button color={defaultColor} mode="contained" onPress={onCancelPress} style={styles.cancelBtn}>{cancelText}</Button>
                     }
                     {useSave &&
                         <Button mode="contained" onPress={onSavePress}>{saveText}</Button>
@@ -38,6 +41,6 @@ export default props => {
 
 const styles = StyleSheet.create({
     cancelBtn: {
-        marginRight: 5
+        marginRight: 10
     }
 });
