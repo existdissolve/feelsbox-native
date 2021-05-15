@@ -1,13 +1,15 @@
-import React from 'react';
+import React, {useEffect, useMemo, useState} from 'react';
 import 'react-native-gesture-handler';
 import {Colors, DarkTheme, Provider as PaperProvider} from 'react-native-paper';
 import {NavigationContainer} from '@react-navigation/native';
 import {createDrawerNavigator} from '@react-navigation/drawer';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {BleManager} from 'react-native-ble-plx';
 import base64 from 'base-64';
 
 import Authentication from '-/components/Authentication';
 import SnackbarProvider from '-/components/shared/Snackbar';
+import {PreferencesContext} from '-/components/shared/Preferences';
 import DrawerMenu from '-/components/Drawer';
 import Stack from '-/components/Stack';
 /*
@@ -131,28 +133,54 @@ const themes = {
         }
     }
 };
-const theme = {
-    ...DarkTheme,
-    colors: {
-        ...DarkTheme.colors,
-        ...themes.sorbet.colors,
-        background: Colors.grey800
-    },
-    roundness: 2
-};
 
 export default () => {
+    const [theme, setTheme] = useState('blue');
+
+    useEffect(() => {
+        const fetchStorage = async() => {
+            const appThemeValue = await AsyncStorage.getItem('appTheme');
+
+            if (appThemeValue) {
+                setTheme(appThemeValue);
+            }
+        };
+
+        fetchStorage();
+    }, []);
+
+    const toggleTheme = theme => {
+        setTheme(theme);
+    };
+    
+    const preferences = useMemo(() => ({
+        toggleTheme,
+        theme
+    }), [toggleTheme, theme]);
+
+    const themeData = {
+        ...DarkTheme,
+        colors: {
+            ...DarkTheme.colors,
+            ...themes[theme].colors,
+            background: Colors.grey800
+        },
+        roundness: 4
+    };
+
     return (
         <Authentication>
-            <PaperProvider theme={theme}>
-                <SnackbarProvider>
-                    <NavigationContainer>
-                        <DrawerNav.Navigator drawerContent={props => <DrawerMenu {...props} />}>
-                            <DrawerNav.Screen name="Home" component={Stack} />
-                        </DrawerNav.Navigator>
-                    </NavigationContainer>
-                </SnackbarProvider>
-            </PaperProvider>
+            <PreferencesContext.Provider value={preferences}>
+                <PaperProvider theme={themeData}>
+                    <SnackbarProvider>
+                        <NavigationContainer>
+                            <DrawerNav.Navigator drawerContent={props => <DrawerMenu {...props} />}>
+                                <DrawerNav.Screen name="Home" component={Stack} />
+                            </DrawerNav.Navigator>
+                        </NavigationContainer>
+                    </SnackbarProvider>
+                </PaperProvider>
+            </PreferencesContext.Provider>
         </Authentication>
     );
 };

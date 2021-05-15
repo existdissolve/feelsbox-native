@@ -17,6 +17,7 @@ export default props => {
         useSave = true
     } = props;
     const theme = useTheme();
+    const accentColor = get(theme, 'colors.accent');
     const defaultColor = get(theme, 'colors.default');
 
     return (
@@ -31,7 +32,7 @@ export default props => {
                         <Button color={defaultColor} mode="contained" onPress={onCancelPress} style={styles.cancelBtn}>{cancelText}</Button>
                     }
                     {useSave &&
-                        <Button mode="contained" onPress={onSavePress}>{saveText}</Button>
+                        <Button color={accentColor} mode="contained" onPress={onSavePress}>{saveText}</Button>
                     }
                 </Dialog.Actions>
             </Dialog>

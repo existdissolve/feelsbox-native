@@ -14,7 +14,7 @@ export default props => {
     };
 
     return (
-        <TouchableOpacity style={style} onPress={onPress} activeOpactity={1}>
+        <TouchableOpacity style={style} onPress={onPress} activeOpactity={1} activeOpacity={1}>
             <IconButton icon={icon} style={styles.icon} />
             <Text style={styles.text}>{label}</Text>
         </TouchableOpacity>

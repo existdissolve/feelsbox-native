@@ -153,13 +153,13 @@ export default props => {
 
     return (
         <Container>
+            <Toolbar>
+                <IconButton icon="notification-clear-all" onPress={onClearPress} disabled={!selections.length} />
+                <IconButton icon="close" onPress={onRemovePress} disabled={!activeItem} />
+                <IconButton icon="plus" onPress={onAddPress} />
+            </Toolbar>
             {!loading && 
                 <ScrollView>
-                    <Toolbar>
-                        <IconButton icon="notification-clear-all" onPress={onClearPress} disabled={!selections.length} />
-                        <IconButton icon="close" onPress={onRemovePress} disabled={!activeItem} />
-                        <IconButton icon="plus" onPress={onAddPress} />
-                    </Toolbar>
                     <Subheader label={name} />
                     {selections.length < 1 ?
                         <Paragraph style={styles.emptyText}>You haven&apos;t added any devices to this group...yet!</Paragraph>

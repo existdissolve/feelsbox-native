@@ -79,10 +79,7 @@ export const getFeels = gql`
                 brightness
                 duration
                 isThumb
-                pixels {
-                    color
-                    position
-                }
+                uri
             }
             isOwner
             isPanorama
