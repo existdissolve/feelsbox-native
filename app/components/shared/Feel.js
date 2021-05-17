@@ -1,9 +1,11 @@
-import React from 'react';
-import {Image, StyleSheet, View} from 'react-native';
-import {Surface} from 'react-native-paper';
+import React, {useState} from 'react';
+import {Image, StyleSheet, TouchableWithoutFeedback, View} from 'react-native';
+import {Surface, useTheme} from 'react-native-paper';
 
 export default props => {
-    const {feel, wrapperStyle, pixelSize} = props;
+    const {feel, longPressHandler, mode = 'list', pressHandler, wrapperStyle, pixelSize} = props;
+    const [isPressed, setIsPressed] = useState(false);
+    const theme = useTheme();
     const {frames = []} = feel;
     const thumb = frames.find(frame => frame.isThumb) || frames[0];
     const {uri} = thumb;
@@ -13,14 +15,38 @@ export default props => {
         ...styles.feel,
         padding: pixelSize,
         height: dim,
-        width: dim
+        width: dim,
+        ...isPressed && {
+            backgroundColor: theme.colors.accent
+        },
+        ...mode === 'grid' && {
+            borderRadius: theme.roundness
+        }
+    };
+
+    const onPressIn = () => {
+        if (!pressHandler) {
+            return false;
+        }
+
+        setIsPressed(true);
+    };
+
+    const onPressOut = () => {
+        if (!pressHandler) {
+            return false;
+        }
+
+        setIsPressed(false);
     };
 
     return (
         <View style={wrapperStyle}>
-            <Surface style={feelStyle}>
-                <Image style={{width: pixelDim, height: pixelDim}} source={{uri: `data:image/png;base64,${uri}`}} />
-            </Surface>
+            <TouchableWithoutFeedback onLongPress={longPressHandler} onPress={pressHandler} onPressIn={onPressIn} onPressOut={onPressOut}>
+                <Surface style={feelStyle}>
+                    <Image style={{width: pixelDim, height: pixelDim}} source={{uri: `data:image/png;base64,${uri}`}} />
+                </Surface>
+            </TouchableWithoutFeedback>
         </View>
     );
 };
@@ -31,7 +57,6 @@ const styles = StyleSheet.create({
         flexWrap: 'wrap',
         justifyContent: 'flex-start',
         marginLeft: 0,
-        marginVertical: 0,
-        marginTop: 5
+        marginVertical: 0
     }
 });

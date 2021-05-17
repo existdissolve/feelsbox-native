@@ -1,7 +1,7 @@
 import React, {Fragment, useRef, useState} from 'react';
 import {useQuery} from '@apollo/client';
 import {TouchableOpacity, View} from 'react-native';
-import {Colors, Divider, IconButton, Menu, useTheme} from 'react-native-paper';
+import {Colors, Divider, IconButton, Menu, Paragraph, useTheme} from 'react-native-paper';
 import {get} from 'lodash';
 
 import {getMyCategories} from '-/graphql/category';
@@ -37,7 +37,6 @@ export default props => {
 
     const onDismiss = () => {
         setIsActive(false);
-        setSelected([]);
     };
 
     const onSelect = (_id, select) => {
@@ -61,8 +60,17 @@ export default props => {
     return (
         <>
             <TouchableOpacity activeOpacity={1} onPress={onPress} style={pickerStyle} ref={touchable}>
-                <IconButton icon="message-text" size={16} />
-                <View style={{flex: 1}} />
+                <IconButton icon="view-list-outline" size={16} />
+                <View style={{flex: 1}}>
+                    <Paragraph numberOfLines={1} style={{marginTop: 7}}>
+                        {selected.map(_id => {
+                            const category = categories.find(item => item._id === _id);
+                            const {name} = category;
+
+                            return name;                            
+                        }).join(', ')}
+                    </Paragraph>
+                </View>
                 <IconButton icon="chevron-down" size={16} />
             </TouchableOpacity>
             <Menu visible={isActive} onDismiss={onDismiss} anchor={anchor} style={{width: menuWidth}}>
