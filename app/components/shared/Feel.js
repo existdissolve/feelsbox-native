@@ -3,7 +3,7 @@ import {Image, StyleSheet, TouchableWithoutFeedback, View} from 'react-native';
 import {Surface, useTheme} from 'react-native-paper';
 
 export default props => {
-    const {feel, longPressHandler, mode = 'list', pressHandler, wrapperStyle, pixelSize} = props;
+    const {feel, isSelected, longPressHandler, mode = 'list', pressHandler, wrapperStyle, pixelSize} = props;
     const [isPressed, setIsPressed] = useState(false);
     const theme = useTheme();
     const {frames = []} = feel;
@@ -16,7 +16,7 @@ export default props => {
         padding: pixelSize,
         height: dim,
         width: dim,
-        ...isPressed && {
+        ...(isPressed || isSelected) && {
             backgroundColor: theme.colors.accent
         },
         ...mode === 'grid' && {

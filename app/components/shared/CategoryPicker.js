@@ -1,6 +1,6 @@
 import React, {Fragment, useRef, useState} from 'react';
 import {useQuery} from '@apollo/client';
-import {TouchableOpacity, View} from 'react-native';
+import {TouchableOpacity, View, useWindowDimensions} from 'react-native';
 import {Colors, Divider, IconButton, Menu, Paragraph, useTheme} from 'react-native-paper';
 import {get} from 'lodash';
 
@@ -18,6 +18,7 @@ export default props => {
     });
     const categories = get(results, 'data.myCategories', []);
     const loading = get(results, 'loading');
+    const maxWidth = useWindowDimensions().width - 20;
     const pickerStyle = {
         flex: 1,
         margin: 5,
@@ -29,7 +30,7 @@ export default props => {
 
     const onPress = () => {
         touchable.current.measure((fx, fy, width, height, px, py) => {
-            setMenuWidth(width);
+            setMenuWidth(Math.min(width, maxWidth));
             setAnchor({x: px, y: py + (height)});
             setIsActive(true);
         });

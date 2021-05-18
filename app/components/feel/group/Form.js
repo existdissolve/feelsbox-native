@@ -1,5 +1,5 @@
 import React, {Fragment, useContext, useLayoutEffect, useState} from 'react';
-import {Divider, IconButton, List, Paragraph, TextInput, useTheme} from 'react-native-paper';
+import {Divider, IconButton, List, Paragraph, TextInput} from 'react-native-paper';
 import {ScrollView, StyleSheet, View} from 'react-native';
 import {useMutation, useQuery} from '@apollo/client';
 import {get} from 'lodash';
@@ -17,7 +17,7 @@ import {
 export default props => {
     const _id = get(props, 'route.params._id');
     const [activeItem, setActiveItem] = useState(null);
-    const [duration, setDuration] = useState(1000);
+    const [duration, setDuration] = useState('1000');
     const [name, setName] = useState('New Feels Group');
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [selections, setSelections] = useState([]);
@@ -25,15 +25,13 @@ export default props => {
     const [addFeelGroup] = useMutation(addFeelGroupMutation);
     const [editFeelGroup] = useMutation(editFeelGroupMutation);
     const {show} = useContext(SnackbarContext);
-    const theme = useTheme();
-    const color = get(theme, 'colors.primary');
 
     const onFeelGroupLoaded = data => {
         const name = get(data, 'feelGroup.name');
         const feels = get(data, 'feelGroup.feels');
-        const duration = get(data, 'feelGroup.duration');
+        const duration = get(data, 'feelGroup.duration', '1000');
 
-        setDuration(duration);
+        setDuration(duration.toString());
         setName(name);
         setSelections(feels);
     };
@@ -48,7 +46,7 @@ export default props => {
 
     const onSavePress = async() => {
         const data = {
-            duration,
+            duration: Number(duration),
             feels: selections.map(item => item._id),
             name
         };
@@ -106,16 +104,44 @@ export default props => {
         }
     };
 
-    const onMoveBack = () => {
+    const onPress = _id => {
+        setActiveItem(_id === activeItem ? null : _id);
+    };
 
+    const onMoveBack = () => {
+        const newSelections = selections.slice();
+        const activeItemIndex = newSelections.findIndex(item => item._id === activeItem);
+        const activeFeel = newSelections[activeItemIndex];
+
+        newSelections.splice(activeItemIndex, 1);
+
+        if (activeItemIndex === 0) {
+            newSelections.push(activeFeel);
+        } else {
+            newSelections.splice(activeItemIndex - 1, 0, activeFeel);
+        }
+
+        setSelections(newSelections);
     };
 
     const onMoveForward = () => {
+        const newSelections = selections.slice();
+        const activeItemIndex = newSelections.findIndex(item => item._id === activeItem);
+        const activeFeel = newSelections[activeItemIndex];
 
+        newSelections.splice(activeItemIndex, 1);
+
+        if (activeItemIndex < selections.length - 1) {
+            newSelections.splice(activeItemIndex + 1, 0, activeFeel);
+        } else {
+            newSelections.unshift(activeFeel);
+        }
+
+        setSelections(newSelections);
     };
 
     const onCategorySelect = categories => {
-
+        setSelectedCategories(categories);
     };
 
     let loading = false;
@@ -155,7 +181,7 @@ export default props => {
                 <IconButton icon="chevron-left" onPress={onMoveBack} disabled={!activeItem} />
                 <IconButton icon="chevron-right" onPress={onMoveForward} disabled={!activeItem} />
             </Toolbar>
-            <View>
+            <View style={styles.selectionView}>
                 {!loading && 
                     <ScrollView>
                         <Subheader label={name} />
@@ -170,6 +196,8 @@ export default props => {
                                         <Feel 
                                             key={`${name}_${_id}`} 
                                             feel={feel} 
+                                            isSelected={_id === activeItem}
+                                            pressHandler={onPress.bind(null, _id)}
                                             wrapperStyle={styles.gridItem} pixelSize={8}
                                             mode="grid" />
                                     );
@@ -181,7 +209,7 @@ export default props => {
                 }
                 <Loading loading={loading} text="Loading Feels Group..." />
             </View>
-            <View>
+            <View style={styles.basicView}>
                 <Toolbar>
                     <CategoryPicker onSelectionChange={onCategorySelect} />
                 </Toolbar>
@@ -197,7 +225,7 @@ export default props => {
                                         {feels.map((feel, idx) => {
                                             const {_id, name} = feel;
                                             const FeelThumb = () => <Feel feel={feel} wrapperStyle={styles.listItem} pixelSize={4} />;
-                                            const AddIcon = () => <IconButton icon="add" onPress={onAddPress.bind(null, _id)} style={styles.listicon} />;
+                                            const AddIcon = () => <IconButton icon="plus-circle" onPress={onAddPress.bind(null, _id)} style={styles.listicon} />;
                                             
                                             return (
                                                 <Fragment key={`${_id}_${idx}`}>
@@ -222,9 +250,11 @@ export default props => {
                 onDialogClose={onDialogClose}
                 onSavePress={onSavePress}>
                 <TextInput 
+                    mode="outlined" 
                     label="Feels Group Name" 
                     value={name} 
-                    onChangeText={value => setName(value)} />
+                    onChangeText={value => setName(value)}
+                    style={styles.formSpacing} />
                 <TextInput 
                     mode="outlined" 
                     label="Duration" 
@@ -238,6 +268,12 @@ export default props => {
 };
 
 const styles = StyleSheet.create({
+    selectionView: {
+        flexShrink: 1
+    },
+    basicView: {
+        flex: 1
+    },  
     emptyText: {
         padding: 15
     },
@@ -262,5 +298,8 @@ const styles = StyleSheet.create({
     listItem: {
         flex: .25, 
         marginTop: 5
+    },
+    formSpacing: {
+        marginBottom: 15
     }
 });

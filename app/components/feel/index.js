@@ -119,7 +119,7 @@ export default props => {
     };
 
     const onFeelGroupPress = () => {
-        // TODO: Navigate to group feels
+        navigation.navigate('feelgroups');
     };
 
     const onSendMessagePress = async() => {
