@@ -53,6 +53,7 @@ export default props => {
 
 const styles = StyleSheet.create({
     feel: {
+        elevation: 2,
         flexDirection: 'row',
         flexWrap: 'wrap',
         justifyContent: 'flex-start',

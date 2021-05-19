@@ -102,7 +102,11 @@ export default () => {
                 onCancelPress={onDialogClose}
                 onDialogClose={onDialogClose}
                 onSavePress={onSavePress}>
-                <TextInput label="Email" value={category} onChangeText={value => setCategory(value)} />
+                <TextInput 
+                    label="Email" 
+                    mode="outlined"
+                    value={category} 
+                    onChangeText={value => setCategory(value)} />
             </Dialog>
         </Container>
     );

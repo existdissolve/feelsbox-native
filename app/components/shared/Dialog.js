@@ -1,5 +1,5 @@
 import React from 'react';
-import {StyleSheet} from 'react-native';
+import {ScrollView, StyleSheet} from 'react-native';
 import {Button, Dialog, Portal, useTheme} from 'react-native-paper';
 import {get} from 'lodash';
 
@@ -22,11 +22,11 @@ export default props => {
 
     return (
         <Portal>
-            <Dialog visible={isOpen} onDismiss={onDialogClose}>
+            <Dialog visible={isOpen} onDismiss={onDialogClose} styles={{display: 'flex'}}>
                 <Dialog.Title>{title}</Dialog.Title>
-                <Dialog.Content>
-                    {children}
-                </Dialog.Content>
+                <Dialog.ScrollArea>
+                    <ScrollView>{children}</ScrollView>
+                </Dialog.ScrollArea>
                 <Dialog.Actions>
                     {useCancel &&
                         <Button color={defaultColor} mode="contained" onPress={onCancelPress} style={styles.cancelBtn}>{cancelText}</Button>
