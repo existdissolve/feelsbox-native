@@ -7,6 +7,7 @@ import {get} from 'lodash';
 import {getMyCategories} from '-/graphql/category';
 
 export default props => {
+    const {mode = 'inline'} = props;
     const theme = useTheme();
     const [isActive, setIsActive] = useState(false);
     const [selected, setSelected] = useState([]);
@@ -19,12 +20,17 @@ export default props => {
     const categories = get(results, 'data.myCategories', []);
     const loading = get(results, 'loading');
     const maxWidth = useWindowDimensions().width - 20;
+    const primaryColor = get(theme, 'colors.primary');
+    const accentColor = get(theme, 'colors.accent');
+    const mainColor = mode === 'inline' ? accentColor : primaryColor;
     const pickerStyle = {
         flex: 1,
-        margin: 5,
+        ...mode === 'inline' && {margin: 5},
+        ...mode === 'form' && {padding: 2, marginTop: 6},
         borderRadius: theme.roundness,
         borderWidth: 1,
-        borderColor: isActive ? get(theme, 'colors.accent') : get(theme, 'colors.default'),
+        backgroundColor: get(theme, 'colors.background'),
+        borderColor: isActive ? mainColor : get(theme, 'colors.placeholder'),
         flexDirection: 'row'
     };
 

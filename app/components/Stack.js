@@ -31,7 +31,7 @@ export default () => {
     const Stack = createStackNavigator();
 
     return (
-        <Stack.Navigator initialRouteName="feel" screenOptions={{header: Navbar}}>
+        <Stack.Navigator initialRouteName="feels" screenOptions={{header: Navbar}}>
             <Stack.Screen name="account" component={Account} options={{title: 'My Account', animationEnabled: false}} />
             <Stack.Screen name="home" component={HomeScreen} options={{title: 'Home'}} />
             <Stack.Screen name="categories" component={Categories} options={{title: 'Categories', animationEnabled: false}} />

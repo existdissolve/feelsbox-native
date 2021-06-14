@@ -51,13 +51,12 @@ export default props => {
     const groupedFeels = groupFeels(feels, {filter: selectedCategories});
 
     const onAddPress = () => {
-
+        navigation.navigate('feel');
     };
 
     const onIconPress = (_id, fn) => {
         setCurrentItem(_id);
-
-        fn();
+        fn(_id);
     };
 
     const onDeviceSelectionChange = selections => {
@@ -185,8 +184,10 @@ export default props => {
         fn();
     };
 
-    const onEditFeel = () => {
-        navigation.navigate('editfeel', {_id: currentItem});
+    const onEditFeel = id => {
+        const _id = id || currentItem;
+
+        navigation.navigate('feel', {_id});
     };
 
     const onRemoveFeel = () => {
@@ -201,30 +202,36 @@ export default props => {
         setIsFriendDialogOpen(true);
     };
 
-    const onSubscribeFeel = async() => {
+    const onSubscribeFeel = async id => {
+        const _id = id || currentItem;
+
         await subscribe({
-            variables: {_id: currentItem}
+            variables: {_id}
         });
 
         show('Removed from Favs!');
     };
 
-    const onUnsubscribeFeel = async() => {
+    const onUnsubscribeFeel = async id => {
+        const _id = id || currentItem;
+
         await unsubscribe({
-            variables: {_id: currentItem}
+            variables: {_id}
         });
 
         show('Removed from Favs!');
     };
 
-    const onCopyFeel = async() => {
+    const onCopyFeel = async id => {
+        const _id = id || currentItem;
+
         await copyFeel({
             awaitRefetchQueries: true,
             refetchQueries: [{
                 fetchPolicy: 'network-only',
                 query: getFeels
             }],
-            variables: {_id: currentItem}
+            variables: {_id}
         });
 
         show('Added to My Feels!');
