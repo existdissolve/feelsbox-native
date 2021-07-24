@@ -17,9 +17,11 @@ export const groupFeels = (feels, opts = {}) => {
                 groups.push({
                     _id: categoryId,
                     name: categoryName,
+                    data: [feel],
                     feels: [feel]
                 });
             } else {
+                group.data.push(feel);
                 group.feels.push(feel);
             }
         } else {
@@ -36,9 +38,11 @@ export const groupFeels = (feels, opts = {}) => {
                     groups.push({
                         _id,
                         name,
+                        data: [feel],
                         feels: [feel]
                     });
                 } else {
+                    group.data.push(feel);
                     group.feels.push(feel);
                 }
             });

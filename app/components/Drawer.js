@@ -19,7 +19,7 @@ export default props => {
             <View>
                 <Drawer.Section>
                     <Drawer.Item label="My Feels" onPress={onPress.bind(null, 'feels')} icon="emoticon-outline" />
-                    <Drawer.Item label="Feels Groups" onPress={onPress.bind(null, 'feelsgroups')} icon="folder-multiple-image" />
+                    <Drawer.Item label="Feels Groups" onPress={onPress.bind(null, 'feelgroups')} icon="folder-multiple-image" />
                     <Drawer.Item label="Find Feels" onPress={onPress.bind(null, 'findfeels')} icon="magnify" />
                     <Drawer.Item label="Categories" onPress={onPress.bind(null, 'categories')} icon="view-list-outline" />
                     <Drawer.Item label="Devices" onPress={onPress.bind(null, 'devices')} icon="tablet" />

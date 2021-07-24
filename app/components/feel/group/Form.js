@@ -1,10 +1,10 @@
-import React, {Fragment, useContext, useLayoutEffect, useState} from 'react';
-import {Divider, IconButton, List, Paragraph, TextInput} from 'react-native-paper';
-import {ScrollView, StyleSheet, View} from 'react-native';
+import React, {useContext, useLayoutEffect, useMemo, useState} from 'react';
+import {Divider, List, Paragraph, TextInput} from 'react-native-paper';
+import {ScrollView, SectionList, StyleSheet, View} from 'react-native';
 import {useMutation, useQuery} from '@apollo/client';
-import {get} from 'lodash';
+import {cloneDeep, get} from 'lodash';
 
-import {CategoryPicker, Container, Dialog, Feel, Loading, Section, SnackbarContext, Subheader, Toolbar} from '-/components/shared';
+import {CategoryPicker, Container, Dialog, Feel, IconButton, Loading, SnackbarContext, Subheader, Toolbar} from '-/components/shared';
 import {groupFeels} from '-/components/feel/utils';
 import {getFeels} from '-/graphql/feel';
 import {
@@ -13,6 +13,41 @@ import {
     getFeelGroup,
     getFeelGroups
 } from '-/graphql/feelGroup';
+
+const FeelButton = props => {
+    const {_id, selections, ...rest} = props;
+    const opts = useMemo(() => ({_id, selections}), []);
+
+    return (
+        <IconButton {...rest} onPressOpts={opts} />
+    );
+};
+
+const Item = props => {
+    const {feel, onAddFeel} = props;
+    const {_id, name} = feel;
+    
+    const ActionIcons = (
+        <View style={styles.row}>
+            <FeelButton
+                _id={_id}
+                icon="plus" 
+                onPress={onAddFeel}
+                style={styles.listicon} />
+        </View>
+    );
+
+    const FeelThumb = () => (
+        <Feel
+            feel={feel} 
+            wrapperStyle={styles.listItem} 
+            pixelSize={4} 
+            mode="list" />
+    );
+    return (
+        <List.Item title={name} left={FeelThumb} right={() => ActionIcons} />
+    );
+};
 
 export default props => {
     const _id = get(props, 'route.params._id');
@@ -82,10 +117,9 @@ export default props => {
 
     const onRemovePress = () => {
         const newSelections = selections.slice();
-        const index = newSelections.findIndex(item => item._id === activeItem);
 
-        if (index !== -1) {
-            newSelections.splice(index, 1);
+        if (activeItem != null) {
+            newSelections.splice(activeItem, 1);
 
             setSelections(newSelections);
         }
@@ -93,8 +127,9 @@ export default props => {
         setActiveItem(null);
     };
 
-    const onAddPress = _id => {
-        const newSelections = selections.slice();
+    const onAddPress = (e, opts = {}) => {
+        const {_id} = opts;
+        const newSelections = cloneDeep(selections);
         const item = feels.find(item => item._id === _id);
 
         if (item) {
@@ -104,58 +139,65 @@ export default props => {
         }
     };
 
-    const onPress = _id => {
-        setActiveItem(_id === activeItem ? null : _id);
+    const onPress = (e, opts = {}) => {
+        const {idx} = opts;
+        
+        setActiveItem(idx === activeItem ? null : idx);
     };
 
     const onMoveBack = () => {
         const newSelections = selections.slice();
-        const activeItemIndex = newSelections.findIndex(item => item._id === activeItem);
-        const activeFeel = newSelections[activeItemIndex];
+        const activeFeel = newSelections[activeItem];
+        
+        let nextIndex;
 
-        newSelections.splice(activeItemIndex, 1);
+        newSelections.splice(activeItem, 1);
 
-        if (activeItemIndex === 0) {
+        if (activeItem === 0) {
             newSelections.push(activeFeel);
+            
+            nextIndex = newSelections.length - 1;
         } else {
-            newSelections.splice(activeItemIndex - 1, 0, activeFeel);
+            newSelections.splice(activeItem - 1, 0, activeFeel);
+            nextIndex = activeItem - 1;
         }
 
         setSelections(newSelections);
+        setActiveItem(nextIndex);
     };
 
     const onMoveForward = () => {
         const newSelections = selections.slice();
-        const activeItemIndex = newSelections.findIndex(item => item._id === activeItem);
-        const activeFeel = newSelections[activeItemIndex];
+        const activeFeel = newSelections[activeItem];
 
-        newSelections.splice(activeItemIndex, 1);
+        newSelections.splice(activeItem, 1);
 
-        if (activeItemIndex < selections.length - 1) {
-            newSelections.splice(activeItemIndex + 1, 0, activeFeel);
+        let nextIndex;
+
+        if (activeItem < selections.length - 1) {
+            newSelections.splice(activeItem + 1, 0, activeFeel);
+            nextIndex = activeItem + 1;
         } else {
             newSelections.unshift(activeFeel);
+            nextIndex = 0;
         }
 
         setSelections(newSelections);
+        setActiveItem(nextIndex);
     };
 
     const onCategorySelect = categories => {
         setSelectedCategories(categories);
     };
 
-    let loading = false;
+    const result = useQuery(getFeelGroup, {
+        notifyOnNetworkStatusChange: true,
+        onCompleted: onFeelGroupLoaded,
+        skip: !_id,
+        variables: {_id}
+    });
 
-    if (_id) {
-        const result = useQuery(getFeelGroup, {
-            notifyOnNetworkStatusChange: true,
-            onCompleted: onFeelGroupLoaded,
-            variables: {_id}
-        });
-
-        loading = get(result, 'loading');
-    }
-
+    const loading = get(result, 'loading');
     const feelsResults = useQuery(getFeels, {
         notifyOnNetworkStatusChange: true
     });
@@ -177,9 +219,9 @@ export default props => {
         <Container>
             <Toolbar>
                 <IconButton icon="notification-clear-all" onPress={onClearPress} disabled={!selections.length} />
-                <IconButton icon="close" onPress={onRemovePress} disabled={!activeItem} />
-                <IconButton icon="chevron-left" onPress={onMoveBack} disabled={!activeItem} />
-                <IconButton icon="chevron-right" onPress={onMoveForward} disabled={!activeItem} />
+                <IconButton icon="close" onPress={onRemovePress} disabled={activeItem == null} />
+                <IconButton icon="chevron-left" onPress={onMoveBack} disabled={activeItem == null} />
+                <IconButton icon="chevron-right" onPress={onMoveForward} disabled={activeItem == null} />
             </Toolbar>
             <View style={styles.selectionView}>
                 {!loading && 
@@ -189,15 +231,16 @@ export default props => {
                             <Paragraph style={styles.emptyText}>You haven&apos;t added any feels to this group...yet!</Paragraph>
                             :
                             <View style={styles.grid}>
-                                {selections.map(feel => {
+                                {selections.map((feel, idx) => {
                                     const {_id} = feel;
 
                                     return (
                                         <Feel 
-                                            key={`${name}_${_id}`} 
+                                            key={`${idx}_${_id}`} 
                                             feel={feel} 
-                                            isSelected={_id === activeItem}
-                                            pressHandler={onPress.bind(null, _id)}
+                                            isSelected={idx === activeItem}
+                                            pressHandlerOpts={{_id, idx}}
+                                            pressHandler={onPress}
                                             wrapperStyle={styles.gridItem} pixelSize={8}
                                             mode="grid" />
                                     );
@@ -214,34 +257,21 @@ export default props => {
                     <CategoryPicker onSelectionChange={onCategorySelect} />
                 </Toolbar>
                 {!feelsLoading && 
-                    <ScrollView>
-                        {groupedFeels.map(group => {
-                            const {_id, name, feels = []} = group;
-                            
-                            return (
-                                <Section key={_id}>
-                                    <Subheader label={name} />
-                                    <View>
-                                        {feels.map((feel, idx) => {
-                                            const {_id, name} = feel;
-                                            const FeelThumb = () => <Feel feel={feel} wrapperStyle={styles.listItem} pixelSize={4} />;
-                                            const AddIcon = () => <IconButton icon="plus-circle" onPress={onAddPress.bind(null, _id)} style={styles.listicon} />;
-                                            
-                                            return (
-                                                <Fragment key={`${_id}_${idx}`}>
-                                                    <List.Item key={idx} title={name} left={FeelThumb} right={AddIcon}  />
-                                                    {idx < feels.length - 1 &&
-                                                        <Divider />
-                                                    }
-                                                </Fragment>
-                                            );
-                                        })}
-                                    </View>
-                                </Section>
-                            );
-                        })}
-                    </ScrollView>
+                    <SectionList
+                        sections={groupedFeels}
+                        initialNumToRender={20}
+                        ItemSeparatorComponent={Divider}
+                        keyExtractor={(feel, index) => `${feel._id}_${index}`}
+                        renderItem={({item}) => (
+                            <Item 
+                                feel={item}
+                                onAddFeel={onAddPress} />
+                        )}
+                        renderSectionHeader={({section: {name}}) => (
+                            <Subheader label={name} />
+                        )} />
                 }
+                <Loading loading={feelsLoading} text="Loading My Feels..." />
             </View>
             <Dialog
                 isOpen={isDialogOpen}
@@ -269,7 +299,8 @@ export default props => {
 
 const styles = StyleSheet.create({
     selectionView: {
-        flexShrink: 1
+        flexShrink: 1,
+        maxHeight: '50%'
     },
     basicView: {
         flex: 1

@@ -1,7 +1,7 @@
-import React, {Fragment, useContext, useEffect, useState} from 'react';
+import React, {useCallback, useContext, useEffect, useMemo, useState} from 'react';
 import {useMutation, useQuery} from '@apollo/client';
-import {ScrollView, StyleSheet, View} from 'react-native';
-import {Divider, IconButton, List, Menu, Paragraph, TextInput, Title, useTheme} from 'react-native-paper';
+import {ScrollView, SectionList, StyleSheet, View} from 'react-native';
+import {Divider, List, Menu, Paragraph, TextInput, Title, useTheme} from 'react-native-paper';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {get} from 'lodash';
 
@@ -14,8 +14,133 @@ import {
     subscribe as subscribeMutation, 
     unsubscribe as unsubscribeMutation
 } from '-/graphql/feel';
-import {CategoryPicker, Container, DevicePicker, Dialog, Fab, Feel, FriendPicker, Loading, SnackbarContext, Section, Subheader, Toolbar} from '-/components/shared';
+import {CategoryPicker, Container, DevicePicker, Dialog, Fab, Feel, FriendPicker, IconButton, Loading, SnackbarContext, Section, Subheader, Toolbar} from '-/components/shared';
 import {groupFeels} from '-/components/feel/utils';
+
+const FeelButton = props => {
+    const {_id, ...rest} = props;
+    const opts = useMemo(() => ({_id}), []);
+
+    return (
+        <IconButton {...rest} onPressOpts={opts} showRender={false} />
+    );
+};
+
+const FeelWrap = props => {
+    const {feel, mode, longPressHandler, pixelSize, wrapperStyle} = props;
+    const {_id} = feel;
+    const [sendFeel] = useMutation(sendFeelMutation);
+
+    const onLongPressFeel = useCallback((e, opts = {}) => {
+        const {_id} = opts;
+
+        e.target.measure((fx, fy, width, height, px, py) => {
+            longPressHandler({_id, x: px, y: py});
+        });
+    }, []);
+
+    const onPressFeel = useCallback((e, opts = {}) => {
+        const {_id} = opts;
+
+        sendFeel({
+            variables: {_id}
+        });
+    }, []);
+    const opts = useMemo(() => {
+        return {_id};
+    }, []);
+
+    return (
+        <Feel 
+            feel={feel} 
+            wrapperStyle={wrapperStyle} 
+            pixelSize={pixelSize}
+            longPressHandler={onLongPressFeel}
+            longPressHandlerOpts={opts}
+            pressHandler={onPressFeel}
+            pressHandlerOpts={opts}
+            mode={mode} />
+    );
+};
+
+const Item = props => {
+    const {feel, onCopyFeel, onEditFeel, onNotifyFeel, onPushFeel, onRemoveFeel, onSubscribeFeel, onUnsubscribeFeel} = props;
+    const {_id, isOwner, isSubscribed, isSubscriptionOwner, name} = feel;
+                                        
+    const pushIcon = (
+        <FeelButton
+            _id={_id}
+            icon="remote" 
+            onPress={onPushFeel}
+            style={styles.listicon} />
+    );
+
+    const notifyIcon = (
+        <FeelButton
+            _id={_id}
+            icon="account-voice" 
+            onPress={onNotifyFeel}
+            style={styles.listicon} />
+    );
+    
+    const ActionIcons = (
+        <View style={styles.row}>
+            {isOwner && 
+                <>
+                    <FeelButton
+                        _id={_id}
+                        icon="pencil" 
+                        onPress={onEditFeel}
+                        style={styles.listicon} />
+                    <FeelButton
+                        _id={_id}
+                        icon="close" 
+                        onPress={onRemoveFeel}
+                        style={styles.listicon} />
+                    {pushIcon}
+                    {notifyIcon}    
+                </>
+            }
+            {!isOwner &&
+                <>
+                    {isSubscriptionOwner && 
+                        <FeelButton
+                            _id={_id}
+                            icon="minus-box" 
+                            onPress={onUnsubscribeFeel}
+                            style={styles.listicon} />
+                    }
+                    {!isSubscribed &&
+                        <FeelButton
+                            _id={_id}
+                            icon="plus-box" 
+                            onPress={onSubscribeFeel} 
+                            style={styles.listicon} />
+                    }
+                    <FeelButton
+                        _id={_id}
+                        icon="flip-to-back" 
+                        onPress={onCopyFeel}
+                        style={styles.listicon} />
+                    {pushIcon}
+                    {notifyIcon} 
+                </>
+            }    
+        </View>
+    );
+
+    const FeelThumb = () => (
+        <FeelWrap
+            feel={feel} 
+            wrapperStyle={styles.listItem} 
+            pixelSize={4} 
+            //pressHandler={onPressFeel}
+            mode="list" />
+    );
+    return (
+        <List.Item title={name} left={FeelThumb} right={() => ActionIcons} />
+    );
+};
 
 export default props => {
     const {navigation} = props;
@@ -52,11 +177,6 @@ export default props => {
 
     const onAddPress = () => {
         navigation.navigate('feel');
-    };
-
-    const onIconPress = (_id, fn) => {
-        setCurrentItem(_id);
-        fn(_id);
     };
 
     const onDeviceSelectionChange = selections => {
@@ -113,7 +233,9 @@ export default props => {
         show('Feel was sent successfully!');
     };
 
-    const onDisplayModePress = async mode => {
+    const onDisplayModePress = (e, opts = {}) => {
+        const {mode} = opts;
+
         setDisplayMode(mode);
     };
 
@@ -139,20 +261,12 @@ export default props => {
         show('Message was sent successfully!');
     };
 
-    const onLongPressFeel = (_id, e) => {
-        e.target.measure((fx, fy, width, height, px, py) => {
-            setCurrentItem(_id);
-            setIsContextMenuOpen(true);
-            setContextMenuAnchor({x: px, y: py});
-        });
-    };
+    const onLongPressFeel = (opts = {}) => {
+        const {_id, x, y} = opts;
 
-    const onPressFeel = async _id => {
-        await sendFeel({
-            variables: {_id}
-        });
-
-        show('Feel was sent successfully!');
+        setCurrentItem(_id);
+        setIsContextMenuOpen(true);
+        setContextMenuAnchor({x, y});
     };
 
     const onCategorySelect = categories => {
@@ -177,53 +291,64 @@ export default props => {
 
     const onContextMenuDismiss = () => {
         setIsContextMenuOpen(false);
+        setCurrentItem(null);
     };
 
     const onContextMenuPress = fn => {
         onContextMenuDismiss();
-        fn();
+
+        fn(null, {_id: currentItem});
     };
 
-    const onEditFeel = id => {
-        const _id = id || currentItem;
+    const onEditFeel = useCallback((e, opts = {}) => {
+        const {_id} = opts;
 
         navigation.navigate('feel', {_id});
-    };
+    }, []);
 
-    const onRemoveFeel = () => {
+    const onRemoveFeel = useCallback((e, opts = {}) => {
+        const {_id} = opts;
+
+        setCurrentItem(_id);
         setIsConfirmRemoveOpen(true);
-    };
+    }, []);
 
-    const onPushFeel = () => {
+    const onPushFeel = useCallback((e, opts = {}) => {
+        const {_id} = opts;
+
+        setCurrentItem(_id);
         setIsDevicePickerOpen(true);
-    };
+    }, []);
 
-    const onNotifyFeel = () => {
+    const onNotifyFeel = useCallback((e, opts = {}) => {
+        const {_id} = opts;
+
+        setCurrentItem(_id);
         setIsFriendDialogOpen(true);
-    };
+    }, []);
 
-    const onSubscribeFeel = async id => {
-        const _id = id || currentItem;
+    const onSubscribeFeel = useCallback(async(e, opts = {}) => {
+        const {_id} = opts;
 
         await subscribe({
             variables: {_id}
         });
 
         show('Removed from Favs!');
-    };
+    }, []);
 
-    const onUnsubscribeFeel = async id => {
-        const _id = id || currentItem;
+    const onUnsubscribeFeel = useCallback(async(e, opts = {}) => {
+        const {_id} = opts;
 
         await unsubscribe({
             variables: {_id}
         });
 
         show('Removed from Favs!');
-    };
+    }, []);
 
-    const onCopyFeel = async id => {
-        const _id = id || currentItem;
+    const onCopyFeel = useCallback(async(e, opts = {}) => {
+        const {_id} = opts;
 
         await copyFeel({
             awaitRefetchQueries: true,
@@ -235,7 +360,7 @@ export default props => {
         });
 
         show('Added to My Feels!');
-    };
+    }, []);
 
     useEffect(() => {
         const fetchStorage = async() => {
@@ -254,17 +379,46 @@ export default props => {
     const isCurrentFeelOwner = get(currentFeel, 'isOwner', false);
     const isCurrentFeelSubscribed = get(currentFeel, 'isSubscribed', false);
     const isCurrentFeelSubscriptionOwner = get(currentFeel, 'isSubscriptionOwner', false);
-
+    
     return (
         <Container>
             <Toolbar>
-                <IconButton icon="grid" onPress={onDisplayModePress.bind(null, 'grid')} color={displayMode === 'grid' ? theme.colors.accent : undefined} />
-                <IconButton icon="view-list" onPress={onDisplayModePress.bind(null, 'list')} color={displayMode === 'list' ? theme.colors.accent : undefined} />
+                <IconButton 
+                    icon="grid" 
+                    onPress={onDisplayModePress}
+                    onPressOpts={{mode: 'grid'}} 
+                    color={displayMode === 'grid' ? theme.colors.accent : undefined} />
+                <IconButton 
+                    icon="view-list" 
+                    onPress={onDisplayModePress} 
+                    onPressOpts={{mode: 'list'}}
+                    color={displayMode === 'list' ? theme.colors.accent : undefined} />
                 <CategoryPicker onSelectionChange={onCategorySelect} />
                 <IconButton icon="message-text" onPress={() => setIsMessageDialogOpen(true)} />
                 <IconButton icon="group" onPress={onFeelGroupPress} />
             </Toolbar>
-            {!loading &&
+            {!loading && displayMode === 'list' && 
+                <SectionList
+                    sections={groupedFeels}
+                    initialNumToRender={20}
+                    ItemSeparatorComponent={Divider}
+                    keyExtractor={(feel, index) => `${feel._id}_${index}`}
+                    renderItem={({item}) => (
+                        <Item 
+                            feel={item}
+                            onCopyFeel={onCopyFeel}
+                            onEditFeel={onEditFeel}
+                            onNotifyFeel={onNotifyFeel}
+                            onPushFeel={onPushFeel}
+                            onRemoveFeel={onRemoveFeel}
+                            onSubscribeFeel={onSubscribeFeel}
+                            onUnsubscribeFeel={onUnsubscribeFeel} />
+                    )}
+                    renderSectionHeader={({section: {name}}) => (
+                        <Subheader label={name} />
+                    )} />
+            }
+            {!loading && displayMode === 'grid' &&
                 <ScrollView>
                     {groupedFeels.map(group => {
                         const {_id, name, feels = []} = group;
@@ -272,67 +426,21 @@ export default props => {
                         return (
                             <Section key={_id}>
                                 <Subheader label={name} />
-                                {displayMode === 'grid' &&
-                                    <View style={styles.grid}>
-                                        {feels.map(feel => {
-                                            const {_id} = feel;
+                                <View style={styles.grid}>
+                                    {feels.map(feel => {
+                                        const {_id} = feel;
 
-                                            return (
-                                                <Feel 
-                                                    key={`${name}_${_id}`} 
-                                                    feel={feel} 
-                                                    wrapperStyle={styles.gridItem} pixelSize={8}
-                                                    longPressHandler={onLongPressFeel.bind(null, _id)}
-                                                    pressHandler={onPressFeel.bind(null, _id)}
-                                                    mode={displayMode} />
-                                            );
-                                        })}
-                                    </View>
-                                }
-                                {displayMode === 'list' &&
-                                    <View>
-                                        {feels.map((feel, idx) => {
-                                            const {_id, isOwner, isSubscribed, isSubscriptionOwner, name} = feel;
-                                            const FeelThumb = () => <Feel feel={feel} wrapperStyle={styles.listItem} pixelSize={4} pressHandler={onPressFeel.bind(null, _id)} />;
-                                            const pushIcon = <IconButton icon="remote" onPress={onIconPress.bind(null, _id, onPushFeel)} style={styles.listicon} />;
-                                            const notifyIcon = <IconButton icon="account-voice" onPress={onIconPress.bind(null, _id, onNotifyFeel)} style={styles.listicon} />;
-                                            const ActionIcons = () => (
-                                                <View style={{flexDirection: 'row'}}>
-                                                    {isOwner && 
-                                                        <>
-                                                            <IconButton icon="pencil" onPress={onIconPress.bind(null, _id, onEditFeel)} style={styles.listicon} />
-                                                            <IconButton icon="close" onPress={onIconPress.bind(null, _id, onRemoveFeel)} style={styles.listicon} />
-                                                            {pushIcon}
-                                                            {notifyIcon}    
-                                                        </>
-                                                    }
-                                                    {!isOwner &&
-                                                        <>
-                                                            {isSubscriptionOwner && 
-                                                                <IconButton icon="minus-box" onPress={onIconPress.bind(null, _id, onUnsubscribeFeel)} style={styles.listicon} />
-                                                            }
-                                                            {!isSubscribed &&
-                                                                <IconButton icon="plus-box" onPress={onIconPress.bind(null, _id, onSubscribeFeel)} style={styles.listicon} />
-                                                            }
-                                                            <IconButton icon="flip-to-back" onPress={onIconPress.bind(null, _id, onCopyFeel)} style={styles.listicon} />
-                                                            {pushIcon}
-                                                            {notifyIcon} 
-                                                        </>
-                                                    }    
-                                                </View>
-                                            );
-
-                                            return (
-                                                <Fragment key={`${_id}_${idx}`}>
-                                                    <List.Item key={idx} title={name} left={FeelThumb} right={ActionIcons} />
-                                                    {idx < feels.length - 1 &&
-                                                        <Divider />
-                                                    }
-                                                </Fragment>
-                                            );
-                                        })}
-                                    </View>
-                                }
+                                        return (
+                                            <FeelWrap 
+                                                key={`${name}_${_id}`} 
+                                                feel={feel} 
+                                                wrapperStyle={styles.gridItem} 
+                                                pixelSize={8}
+                                                longPressHandler={onLongPressFeel}
+                                                mode={displayMode} />
+                                        );
+                                    })}
+                                </View>
                             </Section>
                         );
                     })}
@@ -450,6 +558,9 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginBottom: 15,
         borderRadius: 5
+    },
+    row: {
+        flexDirection: 'row'
     },
     listItem: {
         flex: .25, 

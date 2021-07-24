@@ -1,7 +1,7 @@
-import React, {useContext, useState} from 'react';
+import React, {Fragment, useContext, useState} from 'react';
 import {useMutation, useQuery} from '@apollo/client';
 import {ScrollView} from 'react-native';
-import {IconButton, List, TextInput} from 'react-native-paper';
+import {Divider, IconButton, List, TextInput} from 'react-native-paper';
 import {get} from 'lodash';
 
 import {
@@ -88,7 +88,12 @@ export default () => {
                             const Icon = () => <IconButton icon="pencil" onPress={onEditPress.bind(null, _id)} />;
 
                             return (
-                                <List.Item key={idx} title={name} right={Icon} />
+                                <Fragment key={idx}>
+                                    <List.Item key={idx} title={name} right={Icon} />
+                                    {idx < categories.length - 1 &&
+                                        <Divider />
+                                    }
+                                </Fragment>
                             );
                         })}
                     </Section>
@@ -103,7 +108,7 @@ export default () => {
                 onDialogClose={onDialogClose}
                 onSavePress={onSavePress}>
                 <TextInput 
-                    label="Email" 
+                    label="Category" 
                     mode="outlined"
                     value={category} 
                     onChangeText={value => setCategory(value)} />

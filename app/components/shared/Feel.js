@@ -1,9 +1,9 @@
-import React, {useState} from 'react';
+import React, {memo, useState} from 'react';
 import {Image, StyleSheet, TouchableWithoutFeedback, View} from 'react-native';
 import {Surface, useTheme} from 'react-native-paper';
 
-export default props => {
-    const {feel, isSelected, longPressHandler, mode = 'list', pressHandler, wrapperStyle, pixelSize} = props;
+const Feel = props => {
+    const {feel, isSelected, longPressHandler, longPressHandlerOpts = {}, mode = 'list', pressHandler, pressHandlerOpts = {}, wrapperStyle, pixelSize} = props;
     const [isPressed, setIsPressed] = useState(false);
     const theme = useTheme();
     const {frames = []} = feel;
@@ -24,9 +24,25 @@ export default props => {
         }
     };
 
+    const onLongPress = e => {
+        if (!longPressHandler) {
+            return;
+        }
+
+        longPressHandler(e, longPressHandlerOpts);
+    };
+
+    const onPress = e => {
+        if (!pressHandler) {
+            return;
+        }
+
+        pressHandler(e, pressHandlerOpts);
+    };
+
     const onPressIn = () => {
         if (!pressHandler) {
-            return false;
+            return;
         }
 
         setIsPressed(true);
@@ -34,7 +50,7 @@ export default props => {
 
     const onPressOut = () => {
         if (!pressHandler) {
-            return false;
+            return;
         }
 
         setIsPressed(false);
@@ -42,7 +58,7 @@ export default props => {
 
     return (
         <View style={wrapperStyle}>
-            <TouchableWithoutFeedback onLongPress={longPressHandler} onPress={pressHandler} onPressIn={onPressIn} onPressOut={onPressOut}>
+            <TouchableWithoutFeedback onLongPress={onLongPress} onPress={onPress} onPressIn={onPressIn} onPressOut={onPressOut}>
                 <Surface style={feelStyle}>
                     <Image style={{width: pixelDim, height: pixelDim}} source={{uri: `data:image/png;base64,${uri}`}} />
                 </Surface>
@@ -61,3 +77,5 @@ const styles = StyleSheet.create({
         marginVertical: 0
     }
 });
+
+export default memo(Feel);
