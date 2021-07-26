@@ -1,7 +1,8 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {createStackNavigator} from '@react-navigation/stack';
 import {Button} from 'react-native-paper';
 import {Text, View} from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import Account from '-/components/account';
 import Categories from '-/components/category';
@@ -29,9 +30,28 @@ const HomeScreen = props => {
 
 export default () => {
     const Stack = createStackNavigator();
+    const [initialRoute, setInitialRoute] = useState(null);
+
+    useEffect(() => {
+        const fetchStorage = async() => {
+            const lastRoute = await AsyncStorage.getItem('lastRoute');
+
+            if (lastRoute) {
+                setInitialRoute(lastRoute);
+            } else {
+                setInitialRoute('feels');
+            }
+        };
+
+        fetchStorage();
+    }, []);
+
+    if (!initialRoute) {
+        return null;
+    }
 
     return (
-        <Stack.Navigator initialRouteName="feelgroups" screenOptions={{header: Navbar}}>
+        <Stack.Navigator initialRouteName={initialRoute} screenOptions={{header: Navbar}}>
             <Stack.Screen name="account" component={Account} options={{title: 'My Account', animationEnabled: false}} />
             <Stack.Screen name="home" component={HomeScreen} options={{title: 'Home'}} />
             <Stack.Screen name="categories" component={Categories} options={{title: 'Categories', animationEnabled: false}} />

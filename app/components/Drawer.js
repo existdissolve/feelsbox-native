@@ -2,6 +2,7 @@ import React from 'react';
 import {Drawer, useTheme} from 'react-native-paper';
 import {View} from 'react-native';
 import {get} from 'lodash';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {DrawerContentScrollView} from '@react-navigation/drawer';
 
 export default props => {
@@ -10,8 +11,10 @@ export default props => {
     const style = {
         backgroundColor: get(theme, 'colors.background')
     };
+
     const onPress = destination => {
         navigation.navigate(destination);
+        AsyncStorage.setItem('lastRoute', destination);
     };
 
     return (

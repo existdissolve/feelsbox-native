@@ -241,6 +241,7 @@ export default props => {
 
     const onFeelGroupPress = () => {
         navigation.navigate('feelgroups');
+        AsyncStorage.setItem('lastRoute', 'feelgroups');
     };
 
     const onSendMessagePress = async() => {
