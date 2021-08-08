@@ -27,6 +27,7 @@ export default props => {
                     <Drawer.Item label="Categories" onPress={onPress.bind(null, 'categories')} icon="view-list-outline" />
                     <Drawer.Item label="Devices" onPress={onPress.bind(null, 'devices')} icon="tablet" />
                     <Drawer.Item label="Device Groups" onPress={onPress.bind(null, 'devicegroups')} icon="tablet-cellphone" />
+                    <Drawer.Item label="Connect Device" onPress={onPress.bind(null, 'bluetooth')} icon="bluetooth-connect" />
                     <Drawer.Item label="My Account" onPress={onPress.bind(null, 'account')} icon="account-box" />
                     <Drawer.Item label="Reload" onPress={onPress.bind(null, '')} icon="reload" />
                     <Drawer.Item label="Logout" onPress={onPress.bind(null, '')} icon="logout-variant" />

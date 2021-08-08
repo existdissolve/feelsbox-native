@@ -2,6 +2,7 @@ import React, {useEffect, useState} from 'react';
 import {useMutation} from '@apollo/client';
 import {GoogleSignin, statusCodes} from '@react-native-google-signin/google-signin';
 import auth from '@react-native-firebase/auth';
+import Config from 'react-native-config';
 
 import {login} from '-/graphql/authentication';
 
@@ -75,7 +76,7 @@ export default props => {
     useEffect(() => {
         GoogleSignin.configure({
             scopes: ['email'],
-            webClientId: '355779476097-o2euqmi58qc4br3q7kgon7l9remq5hva.apps.googleusercontent.com',
+            webClientId: Config.WEB_CLIENT_ID,
             offlineAccess: true
         });
 

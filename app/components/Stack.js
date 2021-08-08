@@ -5,6 +5,7 @@ import {Text, View} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import Account from '-/components/account';
+import Bluetooth from '-/components/device/Bluetooth';
 import Categories from '-/components/category';
 import Devices from '-/components/device';
 import DeviceForm from '-/components/device/Form';
@@ -53,6 +54,7 @@ export default () => {
     return (
         <Stack.Navigator initialRouteName={initialRoute} screenOptions={{header: Navbar}}>
             <Stack.Screen name="account" component={Account} options={{title: 'My Account', animationEnabled: false}} />
+            <Stack.Screen name="bluetooth" component={Bluetooth} options={{title: 'Connect to Device', animationEnabled: false}} />
             <Stack.Screen name="home" component={HomeScreen} options={{title: 'Home'}} />
             <Stack.Screen name="categories" component={Categories} options={{title: 'Categories', animationEnabled: false}} />
             <Stack.Screen name="devices" component={Devices} options={{title: 'Devices', animationEnabled: false}} />
